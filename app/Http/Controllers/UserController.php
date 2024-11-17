@@ -49,4 +49,15 @@ class UserController extends Controller
         $users = DB::table('users')->orderBy('created_at', 'desc')->get();
         return response()->json($users, 200);
     }
+
+    public function getById(Request $request){
+        if(!$request->id) return response()->json("O id do usuário não foi informado",200);
+
+        $user = User::find($request->id);
+
+        if($user) return response($user, 200);
+        return response([
+            "error" => "Não existe usuário cadastrado com o id informado"
+        ],404);
+    }
 }
