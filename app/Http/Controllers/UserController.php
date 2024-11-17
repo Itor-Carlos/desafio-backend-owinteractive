@@ -60,4 +60,20 @@ class UserController extends Controller
             "error" => "Não existe usuário cadastrado com o id informado"
         ],404);
     }
+
+    public function delete(Request $request){
+        if(!$request->id) return response()->json("Id não informado", 400);
+
+        $user = User::find($request->id);
+        if($user){
+            DB::table("users")->where("id", "=", $request->id)->delete();
+            return response()->json([
+                "mensagem" => "Usuário removido com sucesso"
+            ], 200);
+        }
+
+        return response()->json([
+            "error" => "Não existe usuário com id informado"
+        ], 404);
+    }
 }
