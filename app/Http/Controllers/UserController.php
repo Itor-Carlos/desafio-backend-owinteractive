@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
@@ -42,5 +43,10 @@ class UserController extends Controller
         ]);
 
         return response()->json($userCreated, 201);
+    }
+
+    public function index(){
+        $users = DB::table('users')->orderBy('created_at', 'desc')->get();
+        return response()->json($users, 200);
     }
 }
