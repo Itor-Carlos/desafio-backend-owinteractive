@@ -16,10 +16,10 @@ return new class extends Migration
             $table->timestamps();
             $table->integer("user_id");
             $table->float("value",$total = 8, $places = 2);
-            $table->string("description", 64);
+            $table->string("description", 64)->nullable();
             $table->enum("type", ["debit", "credit", "refund"]);
             $table->enum("currency", ["USD", "BRL"]);
-            $table->string("notes", 50);
+            $table->string("notes", 50)->nullable();
         });
     }
 
