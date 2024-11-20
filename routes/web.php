@@ -22,3 +22,4 @@ Route::get('/user/{id}', [UserController::class, 'getById']);
 Route::delete('/user/{id}', [UserController::class, 'delete']);
 
 Route::post('/transaction', [TransactionController::class, 'store']);
+Route::get('/transaction/{id}', [TransactionController::class, 'getTransactions']);

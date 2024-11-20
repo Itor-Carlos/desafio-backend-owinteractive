@@ -50,4 +50,30 @@ class TransactionController extends Controller
 
         return response()->json($createdTransaction, '201');
     }
+
+    public function getTransactions(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|integer|exists:users,id'
+        ], [
+            'id.required' => "É necessário informar o id do usuário",
+            'id.integer' => "O tipo do 'id' deve ser integer",
+            'id.exists' => "Não existe usuário com o id informado"
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $transactions = Transaction::where('user_id', $request->id)->cursorPaginate(2);
+
+        return response()->json([
+            'success' => true,
+            'data' => $transactions
+        ], 200);
+    }
+
 }
