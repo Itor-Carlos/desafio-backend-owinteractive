@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -56,24 +57,20 @@ class TransactionController extends Controller
 
     public function getTransactions(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'id' => 'required|integer|exists:users,id'
-        ], [
-            'id.required' => "É necessário informar o id do usuário",
-            'id.integer' => "O tipo do 'id' deve ser integer",
-            'id.exists' => "Não existe usuário com o id informado"
+        if(!$request->id) return response()->json([
+            "error" => "Informe o id do usuário"
+        ], 400);
+
+        $userExists = User::find($request->id);
+
+        if(!$userExists) return response()->json([
+            "error" => "Não existe usuário com o id informado"
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $transactions = Transaction::where('user_id', $request->id)->cursorPaginate(2);
+        $transactions = Transaction::where('user_id', $request->id)->cursorPaginate(15);
 
         return response()->json([
+            'user' => $userExists,
             'success' => true,
             'data' => $transactions
         ], 200);
