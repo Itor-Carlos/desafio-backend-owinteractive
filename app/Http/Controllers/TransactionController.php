@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+
+use function Laravel\Prompts\error;
 
 class TransactionController extends Controller
 {
@@ -74,6 +77,26 @@ class TransactionController extends Controller
             'success' => true,
             'data' => $transactions
         ], 200);
+    }
+
+    public function removeTransaction(Request $request)
+    {
+        $transactionId = $request->id;
+
+        if(!$transactionId) return response()->json([
+            "error" => "É necessário informar o id"
+        ], 400);
+
+        $transaction = Transaction::find($transactionId);
+
+        if(!$transaction) return response([
+            "error" => "Não há transaction com o id informado"
+        ],404);
+
+        DB::table('transactions')->where('id', '=', $transactionId)->delete();
+
+
+        return response()->json(['message' => 'Transaction removida com sucesso'],204);
     }
 
 }
