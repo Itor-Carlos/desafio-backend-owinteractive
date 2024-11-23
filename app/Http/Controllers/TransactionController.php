@@ -5,14 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Validator;
 
 use function Laravel\Prompts\error;
 
 class TransactionController extends Controller
 {
-    //
 
     public function store(Request $request){
         $validationTransaction = Validator::make($request->all(), [
@@ -95,5 +96,55 @@ class TransactionController extends Controller
 
         return response()->json(['message' => 'Transaction removida com sucesso'],204);
     }
+
+    public function exportCSVTransactions(Request $request)
+    {
+        $transactions = [];
+        $filtro = $request->input('filtro');
+
+        if ($filtro === "last30") {
+            $transactions = Transaction::where('created_at', '>=', now()->subDays(30))->get();
+        }
+
+        elseif($filtro == "all"){
+            $transactions = Transaction::all();
+        }
+
+        else {
+            [$mes, $ano] = explode('/', $filtro);
+            $transactions = Transaction::whereYear('created_at', '=', '20' . $ano)
+                                        ->whereMonth('created_at', '=', $mes)
+                                        ->get();
+        }
+
+        $csvFileName = "transactions.csv";
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $csvFileName . '"',
+        ];
+
+        $callback = function () use ($transactions) {
+            $handleFile = fopen('php://output', 'w');
+
+            fputcsv($handleFile, ['User ID', 'Value', 'Type', 'Currency', 'Date']);
+
+            foreach ($transactions as $transaction) {
+                fputcsv($handleFile, [
+                    $transaction->user_id,
+                    $transaction->value,
+                    $transaction->type,
+                    $transaction->currency,
+                    $transaction->created_at->format('Y-m-d H:i:s')
+                ]);
+            }
+
+            fclose($handleFile);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+
 
 }
