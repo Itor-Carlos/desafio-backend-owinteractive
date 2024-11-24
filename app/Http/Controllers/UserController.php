@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -66,6 +67,12 @@ class UserController extends Controller
 
         $user = User::find($request->id);
         if($user){
+            $transactionsUser = Transaction::where('user_id', '=', $user->id)->get();
+
+            if(count($transactionsUser)!=0) return response()->json([
+                "message" => "Não é possível deletar o usuário de ID ".$user->id."devido ao mesmo ter transações"
+            ],406);
+
             DB::table("users")->where("id", "=", $request->id)->delete();
             return response()->json([
                 "mensagem" => "Usuário removido com sucesso"
