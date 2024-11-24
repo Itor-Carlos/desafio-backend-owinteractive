@@ -24,3 +24,4 @@ Route::delete('/user/{id}', [UserController::class, 'delete']);
 Route::post('/transaction', [TransactionController::class, 'store']);
 Route::get('/transaction/{id}', [TransactionController::class, 'getTransactions']);
 Route::delete('/transaction/{id}', [TransactionController::class, 'removeTransaction']);
+Route::get('/transaction/csv/generate', [TransactionController::class, 'exportCSVTransactions']);
