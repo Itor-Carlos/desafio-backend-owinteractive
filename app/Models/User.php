@@ -26,6 +26,7 @@ class User extends Authenticatable
         'email',
         'birthday',
         'updated_at',
-        'created_at'
+        'created_at',
+        'initial_balance'
     ];
 }

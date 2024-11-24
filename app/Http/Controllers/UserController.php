@@ -15,16 +15,20 @@ class UserController extends Controller
     {
         $validateRequest = Validator::make($request->all(), [
             'name' => 'required|max:75|string',
-            'email' => 'required|unique:users|string',
-            'birthday' => 'required|date'
+            'email' => 'required|email|unique:users|string',
+            'birthday' => 'required|date',
+            'initial_balance' => 'nullable|numeric|min:0'
         ], [
             'name.required' => "O campo 'nome' é obrigatório.",
-            'name.string' => "O campo 'nome' deve ser uma string",
-            'email.required' => "O campo 'email' é obrigatório",
-            'email.string' => "O campo 'email' deve ser uma string",
-            'email.unique' => "Esse email já foi atualizado",
-            'birthday.required' => "O campo 'birtday' é obrigatório",
-            'birthday.date' => "O campo 'birthday' deve ser um date"
+            'name.string' => "O campo 'nome' deve ser uma string.",
+            'email.required' => "O campo 'email' é obrigatório.",
+            'email.string' => "O campo 'email' deve ser uma string.",
+            'email.unique' => "Esse email já está em uso.",
+            'email.email' => "O campo 'email' deve conter um endereço válido.",
+            'birthday.required' => "O campo 'data de nascimento' é obrigatório.",
+            'birthday.date' => "O campo 'data de nascimento' deve ser uma data válida.",
+            'initial_balance.numeric' => "O campo 'saldo inicial' deve ser um número.",
+            'initial_balance.min' => "O campo 'saldo inicial' não pode ser negativo."
         ]);
 
         if ($validateRequest->fails()) {
@@ -47,10 +51,13 @@ class UserController extends Controller
             ], 400);
         }
 
+        $initialBalance = $request->input('initial_balance', 0.00);
+
         $userCreated = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'birthday' => $request->birthday,
+            'initial_balance' => $initialBalance
         ]);
 
         return response()->json($userCreated, 201);
