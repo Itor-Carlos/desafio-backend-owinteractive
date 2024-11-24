@@ -4,13 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Transaction;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-    public function store(Request $request){
+    public function store(Request $request)
+    {
         $validateRequest = Validator::make($request->all(), [
             'name' => 'required|max:75|string',
             'email' => 'required|unique:users|string',
@@ -33,9 +35,17 @@ class UserController extends Controller
                 $errosFormatados[$campo] = implode(', ', $mensagens);
             }
 
-            return response()->json($errosFormatados,400);
+            return response()->json($errosFormatados, 400);
         }
 
+        $birthday = Carbon::parse($request->birthday);
+        $age = $birthday->diffInYears(Carbon::now());
+
+        if ($age < 18) {
+            return response()->json([
+                "message" => "Necessário idade superior ou igual a 18 anos"
+            ], 400);
+        }
 
         $userCreated = User::create([
             'name' => $request->name,
