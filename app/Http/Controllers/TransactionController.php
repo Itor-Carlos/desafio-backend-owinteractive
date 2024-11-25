@@ -99,21 +99,24 @@ class TransactionController extends Controller
 
     public function exportCSVTransactions(Request $request)
     {
+        $userId = $request->id;
+
+        if(!$userId) return response()->json([
+            "error" => "ID do usuário não informado"
+        ]);
+
         $transactions = [];
-        $filtro = $request->input('filtro');
+        $filtro = $request->input('filter');
 
         if ($filtro === "last30") {
-            $transactions = Transaction::where('created_at', '>=', now()->subDays(30))->get();
-        }
-
-        elseif($filtro == "all"){
-            $transactions = Transaction::all();
-        }
-
-        else {
+            $transactions = Transaction::where('created_at', '>=', now()->subDays(30))->where('user_id', '=', $userId)->get();
+        } elseif ($filtro == "all") {
+            $transactions = Transaction::where('user_id', '=', $userId)->get();
+        } else {
             [$mes, $ano] = explode('/', $filtro);
-            $transactions = Transaction::whereYear('created_at', '=', '20' . $ano)
+            $transactions = Transaction::where('user_id', '=', $userId)->whereYear('created_at', '=', '20' . $ano)
                                         ->whereMonth('created_at', '=', $mes)
+                                        ->with('user')
                                         ->get();
         }
 
@@ -127,7 +130,27 @@ class TransactionController extends Controller
         $callback = function () use ($transactions) {
             $handleFile = fopen('php://output', 'w');
 
-            fputcsv($handleFile, ['User ID', 'Value', 'Type', 'Currency', 'Date']);
+            $user = $transactions->first()->user ?? null;
+            if ($user) {
+                fputcsv($handleFile, ['Client Information']);
+                fputcsv($handleFile, ['Name', 'Email', 'Birthday', 'Current Balance']);
+                fputcsv($handleFile, [
+                    $user->name,
+                    $user->email,
+                    $user->birthday,
+                    $user->current_balance ?? '0.00'
+                ]);
+
+                fputcsv($handleFile, []);
+            }
+
+            fputcsv($handleFile, [
+                'User ID',
+                'Transaction Value',
+                'Transaction Type',
+                'Currency',
+                'Transaction Date'
+            ]);
 
             foreach ($transactions as $transaction) {
                 fputcsv($handleFile, [
@@ -144,7 +167,4 @@ class TransactionController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
-
-
-
 }
