@@ -20,6 +20,7 @@ Route::post('/user',  [UserController::class, 'store']);
 Route::get('/user', [UserController::class, 'index']);
 Route::get('/user/{id}', [UserController::class, 'getById']);
 Route::delete('/user/{id}', [UserController::class, 'delete']);
+Route::get('/user/{id}/transaction', [UserController::class, 'sumTransaction']);
 
 Route::post('/transaction', [TransactionController::class, 'store']);
 Route::get('/transaction/{id}', [TransactionController::class, 'getTransactions']);

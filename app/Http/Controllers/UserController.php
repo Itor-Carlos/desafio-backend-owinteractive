@@ -100,4 +100,27 @@ class UserController extends Controller
             "error" => "Não existe usuário com id informado"
         ], 404);
     }
+
+    public function sumTransaction(Request $request){
+
+        if(!$request->id) return response([
+            "message" => "O id do usuário não foi informado"
+        ],400);
+
+        $user = User::find($request->id);
+
+        if(!$user) return response([
+            "message" => "Não existe nenhum usuário com o id informado"
+        ]);
+
+        $transactionsUser = Transaction::where('user_id', '=', $request->id)->get();
+        $value = $user->initial_balance;
+
+        foreach($transactionsUser as $transaction){
+            $value += $transaction->value;
+        }
+        return response()->json([
+            "sum_transactions" => $value
+        ],200);
+    }
 }
